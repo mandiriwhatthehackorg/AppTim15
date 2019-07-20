@@ -61,7 +61,7 @@
 
 
     <LinearLayout
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -72,7 +72,7 @@
             android:layout_height="wrap_content"
             android:textColor="#77869e"
             android:text="Remember me"
-            android:textSize="10sp"/>
+            android:textSize="11sp"/>
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -91,6 +91,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login"
+        android:textAllCaps="false"
         android:textColor="@android:color/white"
         android:background="@drawable/button"/>
     

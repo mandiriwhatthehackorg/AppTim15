@@ -63,10 +63,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ExampleHolder>
     @Override
     public void onBindViewHolder(@NonNull ChatAdapter.ExampleHolder holder, int position) {
         ChatModel currentChat = listChat.get(position);
-        if(currentChat.getFrom() == ChatModel.SYSTEM_TYPING_INPUT)
-            holder.tv_send_time.setText("");
-        else
-            holder.tv_send_time.setText(currentChat.getSendTime());
         holder.tv_message.setText(currentChat.getMessage());
 
     }
@@ -95,12 +91,10 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ExampleHolder>
     public class ExampleHolder extends RecyclerView.ViewHolder {
 
         public TextView tv_message;
-        public TextView tv_send_time;
 
         public ExampleHolder(@NonNull View itemView) {
             super(itemView);
             tv_message = itemView.findViewById(R.id.text_message_body);
-            tv_send_time = itemView.findViewById(R.id.text_message_time);
         }
     }
 }

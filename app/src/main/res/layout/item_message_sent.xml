@@ -8,36 +8,18 @@
     android:paddingTop="8dp">
 
     <TextView
-        android:layout_alignParentRight="true"
+
+        android:layout_alignParentLeft="true"
         android:id="@+id/text_message_body"
-        android:text="hello, hello!"
-        android:background="@drawable/rounded_rectangle_blue"
+        android:text="Abyan Dafa ganteng sekali"
+        android:background="@drawable/ic_system_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxWidth="240dp"
-        android:padding="8dp"
-        android:textColor="#ffffff"
+        android:maxWidth="120dp"
+        android:padding="12dp"
+        android:textColor="#404040"
+        android:textSize="14sp"
         android:layout_marginRight="8dp" />
 
-
-    <TextView
-        android:layout_toLeftOf="@+id/text_message_body"
-        android:id="@+id/text_message_time"
-        android:text="11:40"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="10sp"
-        android:layout_above="@id/something"
-        android:layout_marginRight="4dp"/>
-
-    <TextView
-        android:visibility="invisible"
-        android:layout_below="@+id/text_message_body"
-        android:id="@+id/something"
-        android:layout_width="wrap_content"
-        android:layout_height="1dp"
-        android:maxWidth="240dp"
-        android:padding="8dp"
-        android:textColor="#ffffff"/>
 
 </RelativeLayout>

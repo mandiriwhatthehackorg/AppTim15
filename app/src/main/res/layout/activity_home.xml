@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@color/white"
     android:layout_height="match_parent"
-    android:background="#f7f7f7"
-    tools:context=".MainActivity">
+    tools:context=".HomeActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -15,8 +15,7 @@
         app:contentInsetStartWithNavigation="0dp"
         android:backgroundTint="@color/colorPrimary"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        android:background="@color/colorPrimary"
-        app:title="Acara Saya">
+        android:background="@color/colorPrimary">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -37,43 +36,41 @@
 
     </androidx.appcompat.widget.Toolbar>
 
-    <RelativeLayout
-        android:id="@+id/background"
-        android:layout_below="@id/toolbar"
-        android:layout_width="match_parent"
-        android:background="@color/white"
-        android:layout_height="120dp"></RelativeLayout>
 
-    <RelativeLayout
-        android:background="@color/white"
-        android:layout_width="match_parent"
-        android:layout_height="140dp"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/layout_mic">
-        <ImageView
-            android:id="@+id/ic_mic"
-            android:layout_width="100sp"
-            android:layout_height="100sp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/mic"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-
-        android:layout_below="@id/background"
-        android:id="@+id/chat_layout"
+    <ImageView
+        android:id="@+id/ic_mic"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/mic"/>
+    <LinearLayout
+        android:id="@+id/something"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/layout_mic">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:padding="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        </androidx.recyclerview.widget.RecyclerView>
-    </RelativeLayout>
-
-
+        android:layout_below="@id/ic_mic"
+        android:orientation="horizontal">
+        <TextView
+            android:textSize="17sp"
+            android:textColor="#404040"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hallo "/>
+        <TextView
+            android:textSize="17sp"
+            android:textColor="#404040"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Yohanes,"/>
+    </LinearLayout>
+    <TextView
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/something"
+        android:textSize="12sp"
+        android:textColor="#404040"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Apa yang bisa saya bantu?"/>
 
 </RelativeLayout>

@@ -8,6 +8,12 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="MyActionBarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="actionBarItemBackground">@color/white</item>
+        <item name="android:panelFullBackground">@color/white</item>
+    </style>
+
     <style name="AppThemeFull" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -142,9 +148,9 @@
     </style>
 
     <style name="EditText.White" parent="@style/AppTheme">
-        <item name="colorControlActivated">@android:color/white</item>
-        <item name="colorControlHighlight">@android:color/white</item>
-        <item name="colorControlNormal">@color/grey_10</item>
+        <item name="colorControlActivated">#444444</item>
+        <item name="colorControlHighlight">@color/edittexthint</item>
+        <item name="colorControlNormal">@color/edittexthint</item>
     </style>
 
     <style name="EditText.White.Hint" parent="@style/EditText.White">

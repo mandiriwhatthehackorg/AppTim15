@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,8 +65,6 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
     private ChatAdapter adapter;
     private ArrayList<ChatModel> listChat;
 
-    ImageView imageView;
-    ImageView imageView2;
     //top-up requirement
     private PhoneCreditModel phoneCreditModel;
 
@@ -89,18 +88,13 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        imageView = findViewById(R.id.icon_app);
-        imageView2 = findViewById(R.id.gif_icon);
         ImageView micIcon = findViewById(R.id.ic_mic);
-
-        Glide.with(this)
-                .load(R.drawable.listening)
-                .into(imageView2);
-
-
         initializeTextToSpeech();
         initializeSpeechToText();
         initChatRequirement();
+
+
+
         handleSSLHandshake();
         RequestUtils.getToken(this, this);
 
@@ -110,6 +104,12 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
                 initListening();
             }
         });
+
+
+        Bundle extras = getIntent().getExtras();
+        String newString= extras.getString("extra");
+
+        processInput(newString);
     }
 
     // Top-up pulsa
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
 
     private void finishTopUpTransaction(){
         ChatModel replyChat;
-        replyChat = new ChatModel(ChatModel.SYSTEM_INPUT, "Yeay! isi pulsa berhasil dilakukan", getCurrentTimeStamp());
+        replyChat = new ChatModel(ChatModel.SYSTEM_INPUT, "Transaksi berhasil, silahkan cek pulsa anda", getCurrentTimeStamp());
         listChat.add(replyChat);
         adapter.notifyDataSetChanged();
         recyclerView.smoothScrollToPosition(listChat.size()-1);
@@ -189,9 +189,33 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
 
     }
 
-    private void processInput(List<String> results) {
-        String text = results.get(0);
+    private void processInput(String text) {
         final String input= text.toLowerCase();
+
+        if(input.contains("ulangi transaksi")){
+            listChat.add(new ChatModel(ChatModel.USER_INPUT, input, getCurrentTimeStamp()));
+            listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Typing . . . ", "00"));
+            recyclerView.smoothScrollToPosition(listChat.size()-1);
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    //Do something after 100ms
+                    adapter.removeLastItem();
+                    ChatModel replyChat;
+                    replyChat = new ChatModel(ChatModel.SYSTEM_INPUT, "Baiklah, mari kita ulangi, ada yang bisa saya bantu?", getCurrentTimeStamp());
+                    listChat.add(replyChat);
+                    adapter.notifyDataSetChanged();
+                    recyclerView.smoothScrollToPosition(listChat.size()-1);
+                    speakUp(replyChat.getMessage());
+
+                    currentState = STATE_NEW;
+
+                }
+            }, 2000);
+
+            return;
+        }
 
         if(currentState == STATE_NEW){
             if(input.contains("pulsa")){
@@ -266,9 +290,13 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
 
 
         } else if(currentState == TOP_UP_STATE_ASK_AMOUNT){
-            String amount = input.replaceAll("\\s+","");
+
+            String[] amountText = input.split(" ");
+            String amount = amountText[0];
+            Log.d(Const.TAG, "processInput amount 1: " + amount);
+
+
             amount = amount.replaceAll("[.]","");
-            amount = amount.substring(2);
             phoneCreditModel.setAmount(amount);
 
             listChat.add(new ChatModel(ChatModel.USER_INPUT, amount, getCurrentTimeStamp()));
@@ -636,9 +664,7 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
                 public void onResults(Bundle bundle) {
                     List<String> results = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-                    imageView2.setVisibility(View.GONE);
-                    imageView.setVisibility(View.VISIBLE);
-                    processInput(results);
+                    processInput(results.get(0));
                 }
 
                 @Override
@@ -662,26 +688,9 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(LayoutUtils.createLinearLayoutManager(this, RecyclerView.VERTICAL));
-        final ChatModel replyChat = new ChatModel(ChatModel.SYSTEM_INPUT, "Halo Ryo! apa yang bisa dibantu hari ini?", getCurrentTimeStamp());
-        listChat.add(replyChat);
-        adapter.notifyDataSetChanged();
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //Do something after 100ms
-                speakUp(replyChat.getMessage());
-            }
-        },2000);
-
     }
 
     private void startListening() {
-
-
-
-        imageView.setVisibility(View.GONE);
-//        imageView2.setVisibility(View.VISIBLE);
         Log.d(Const.TAG, "startListening: ");
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
