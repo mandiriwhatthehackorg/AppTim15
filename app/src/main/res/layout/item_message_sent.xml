@@ -9,10 +9,11 @@
 
     <TextView
 
+        android:layout_marginLeft="12dp"
         android:layout_alignParentLeft="true"
         android:id="@+id/text_message_body"
         android:text="Abyan Dafa ganteng sekali"
-        android:background="@drawable/ic_system_bubble"
+        android:background="@drawable/ic_bubble_user_chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:maxWidth="120dp"
