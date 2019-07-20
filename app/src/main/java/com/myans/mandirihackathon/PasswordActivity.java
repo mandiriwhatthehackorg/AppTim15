@@ -11,9 +11,12 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.keijumt.passwordview.ActionListener;
 import com.keijumt.passwordview.PasswordView;
 import com.myans.mandirihackathon.interfaces.Const;
+
+import java.util.ArrayList;
 
 public class PasswordActivity extends AppCompatActivity implements View.OnClickListener, ActionListener {
 
@@ -29,8 +32,19 @@ public class PasswordActivity extends AppCompatActivity implements View.OnClickL
     private TextView tv_0;
     private ImageView arrowBack;
 
-    private PasswordView passwordView;
+    private ArrayList<Integer> pins = new ArrayList<>();
+
+//    private PasswordView passwordView;
     boolean isCorrect = false;
+
+    private ImageView pin1;
+    private ImageView pin2;
+    private ImageView pin3;
+    private ImageView pin4;
+    private ImageView pin5;
+    private ImageView pin6;
+
+    private ArrayList<ImageView> pinImages = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +63,20 @@ public class PasswordActivity extends AppCompatActivity implements View.OnClickL
         tv_9 = findViewById(R.id.number9);
         tv_0 = findViewById(R.id.number0);
         arrowBack = findViewById(R.id.delete);
-        passwordView = findViewById(R.id.passwordView);
+
+        pin1 = findViewById(R.id.pin1);
+        pin6 = findViewById(R.id.pin6);
+        pin5 = findViewById(R.id.pin5);
+        pin4 = findViewById(R.id.pin4);
+        pin3 = findViewById(R.id.pin3);
+        pin2 = findViewById(R.id.pin2);
+
+        pinImages.add(pin1);
+        pinImages.add(pin2);
+        pinImages.add(pin3);
+        pinImages.add(pin4);
+        pinImages.add(pin5);
+        pinImages.add(pin6);
 
         tv_1.setOnClickListener(this);
         tv_2.setOnClickListener(this);
@@ -63,46 +90,58 @@ public class PasswordActivity extends AppCompatActivity implements View.OnClickL
         tv_0.setOnClickListener(this);
         arrowBack.setOnClickListener(this);
 
-        passwordView.setListener(this);
+    }
+
+    private void updatePin(boolean isAdd){
+        if(isAdd){
+            Glide.with(this).load(R.drawable.fill_dot).into(pinImages.get(pins.size()-1));
+        }
+        else{
+            Glide.with(this).load(R.drawable.empty_dot).into(pinImages.get(pins.size()));
+        }
+
+        if(pins.size() == 6)
+            startActivity(new Intent(this, HomeActivity.class));
     }
 
     @Override
     public void onClick(View v) {
+        boolean isAdd = true;
         if(v.getId() == R.id.number0)
-            passwordView.appendInputText("0");
+            pins.add(0);
         else if(v.getId() == R.id.number1)
-            passwordView.appendInputText("1");
+            pins.add(1);
         else if(v.getId() == R.id.number2)
-            passwordView.appendInputText("2");
+            pins.add(2);
         else if(v.getId() == R.id.number3)
-            passwordView.appendInputText("3");
+            pins.add(3);
         else if(v.getId() == R.id.number4)
-            passwordView.appendInputText("4");
+            pins.add(4);
         else if(v.getId() == R.id.number5)
-            passwordView.appendInputText("5");
+            pins.add(5);
         else if(v.getId() == R.id.number6)
-            passwordView.appendInputText("6");
+            pins.add(6);
         else if(v.getId() == R.id.number7)
-            passwordView.appendInputText("7");
+            pins.add(7);
         else if(v.getId() == R.id.number8)
-            passwordView.appendInputText("8");
+            pins.add(8);
         else if(v.getId() == R.id.number9)
-            passwordView.appendInputText("9");
-        else if(v.getId() == R.id.delete)
-            passwordView.removeInputText();
+            pins.add(9);
+        else if(v.getId() == R.id.delete){
+            if(pins.size() != 0){
+                pins.remove(pins.size()-1);
+                isAdd = false;
+            }
+            else
+                return;
+        }
+        updatePin(isAdd);
+
     }
 
     @Override
     public void onCompleteInput(String s) {
-        if(s.equals("123456")){
-            passwordView.correctAnimation();
-            isCorrect = true;
 
-        }
-        else{
-            passwordView.incorrectAnimation();
-            isCorrect = false;
-        }
     }
 
     @Override

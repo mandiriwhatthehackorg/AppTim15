@@ -149,7 +149,7 @@
 
     <style name="EditText.White" parent="@style/AppTheme">
         <item name="colorControlActivated">#444444</item>
-        <item name="colorControlHighlight">@color/edittexthint</item>
+        <item name="colorControlHighlight">@android:color/black</item>
         <item name="colorControlNormal">@color/edittexthint</item>
     </style>
 

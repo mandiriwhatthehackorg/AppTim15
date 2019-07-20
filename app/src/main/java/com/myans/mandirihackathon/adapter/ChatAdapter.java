@@ -63,7 +63,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ExampleHolder>
     @Override
     public void onBindViewHolder(@NonNull ChatAdapter.ExampleHolder holder, int position) {
         ChatModel currentChat = listChat.get(position);
-        holder.tv_message.setText(currentChat.getMessage());
+        if(currentChat.getFrom() == ChatModel.SYSTEM_TYPING_INPUT)
+            return;
+        if(currentChat.getVisibleMessage()==null)
+            holder.tv_message.setText(currentChat.getMessage());
+        else
+            holder.tv_message.setText(currentChat.getVisibleMessage());
 
     }
 

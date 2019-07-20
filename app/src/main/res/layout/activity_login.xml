@@ -17,7 +17,8 @@
 
 
     <com.google.android.material.textfield.TextInputLayout
-        android:layout_marginTop="20dp"
+
+        android:layout_marginTop="70dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/EditText.White.Hint">
@@ -32,7 +33,7 @@
             android:maxLength="50"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColor="@color/grey_10"
+            android:textColor="@android:color/black"
             android:theme="@style/EditText.White" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -54,7 +55,7 @@
             android:maxLength="50"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColor="@color/grey_10"
+            android:textColor="@android:color/black"
             android:theme="@style/EditText.White" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -87,7 +88,7 @@
     <!-- Button -->
     <Button
         android:id="@+id/button_login"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="55dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Login"

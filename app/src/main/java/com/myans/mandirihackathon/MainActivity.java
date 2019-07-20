@@ -1,14 +1,21 @@
 package com.myans.mandirihackathon;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Animatable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,7 +23,10 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -24,6 +34,8 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.google.android.material.navigation.NavigationView;
 import com.myans.mandirihackathon.adapter.ChatAdapter;
 import com.myans.mandirihackathon.base_class.BaseSharedPref;
 import com.myans.mandirihackathon.interfaces.BaseRequestListener;
@@ -55,7 +67,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-public class MainActivity extends AppCompatActivity implements BaseRequestListener {
+public class MainActivity extends AppCompatActivity implements BaseRequestListener, TextToSpeech.OnUtteranceCompletedListener {
 
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private TextToSpeech myTTS;
@@ -64,6 +76,10 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
     private RecyclerView recyclerView;
     private ChatAdapter adapter;
     private ArrayList<ChatModel> listChat;
+
+    private ImageView andiniImage;
+
+    boolean canListening;
 
     //top-up requirement
     private PhoneCreditModel phoneCreditModel;
@@ -84,24 +100,43 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
     private int currentState = 0;
 
 
+    DrawerLayout drawerLayout;
+    Toolbar toolbar;
+    ActionBarDrawerToggle drawerToggle;
+
+    ImageView micIcon;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ImageView micIcon = findViewById(R.id.ic_mic);
+        initToolbar();
+        ImageView menuButton  =findViewById(R.id.hard_menu);
+        menuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(Gravity.LEFT);
+            }
+        });
+        micIcon = findViewById(R.id.ic_mic);
         initializeTextToSpeech();
         initializeSpeechToText();
         initChatRequirement();
 
-
-
+        andiniImage = findViewById(R.id.andini);
         handleSSLHandshake();
         RequestUtils.getToken(this, this);
 
         micIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                initListening();
+                if(canListening){
+                    canListening = false;
+
+                    changeAndini(R.drawable.ic_listening_fix);
+                    initListening();
+                }
             }
         });
 
@@ -112,12 +147,84 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
         processInput(newString);
     }
 
+    private void initToolbar() {
+        drawerLayout = findViewById(R.id.drawer_layout);
+        toolbar = findViewById(R.id.toolbar);
+
+
+        ActionBar actionbar = getSupportActionBar();
+        if (actionbar != null){
+            actionbar.setDisplayHomeAsUpEnabled(true);
+            actionbar.setHomeAsUpIndicator(R.mipmap.ic_menu);
+        }
+
+        drawerToggle = setupDrawerToggle();
+
+        drawerLayout.addDrawerListener(drawerToggle);
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        setupNavDrawer(navigationView);
+
+        setSupportActionBar(toolbar);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.home:
+                drawerLayout.openDrawer(drawerLayout);
+                return true;
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+    private void setupNavDrawer(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.nav_item_four:
+                        break;
+                    case R.id.nav_item_five:
+                        logout();
+                        break;
+                    default:
+                }
+
+
+                setTitle(item.getTitle());
+                drawerLayout.closeDrawers();
+
+                return true;
+            }
+        });
+    }
+
+    private void logout() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+    private ActionBarDrawerToggle setupDrawerToggle(){
+        return new ActionBarDrawerToggle(
+                this,
+                drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
+    }
+
     // Top-up pulsa
     private void askNumber(){
         adapter.removeLastItem();
         phoneCreditModel = new PhoneCreditModel();
         ChatModel replyChat;
         replyChat = new ChatModel(ChatModel.SYSTEM_INPUT, "Sebutkan nomor telepon yang ingin anda isi", getCurrentTimeStamp());
+        replyChat.setVisibleMessage(replyChat.getMessage());
         listChat.add(replyChat);
         adapter.notifyDataSetChanged();
         recyclerView.smoothScrollToPosition(listChat.size()-1);
@@ -128,6 +235,8 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
         adapter.removeLastItem();
         ChatModel replyChat;
         replyChat = new ChatModel(ChatModel.SYSTEM_INPUT, "Berapa nominal yang ingin anda isi?", getCurrentTimeStamp());
+        replyChat.setVisibleMessage(replyChat.getMessage());
+
         listChat.add(replyChat);
         adapter.notifyDataSetChanged();
         recyclerView.smoothScrollToPosition(listChat.size()-1);
@@ -171,7 +280,15 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
                 else if(provider == PhoneNumberUtils.THREE)
                     RequestUtils.getAPI(Const.GET_THREE_PRODUCT, Request.Method.GET, new JSONObject(), MainActivity.this, MainActivity.this, BaseSharedPref.getSpString(MainActivity.this, Const.AUTH_TOKEN));
                 else
-                    Toast.makeText(MainActivity.this, "Salah", Toast.LENGTH_SHORT).show();
+                {
+                    listChat.add(new ChatModel(ChatModel.SYSTEM_INPUT, "Mohon maaf, provider tidak ditemukan.", ""));
+
+                    adapter.notifyDataSetChanged();
+                    recyclerView.smoothScrollToPosition(listChat.size()-1);
+
+                    currentState = STATE_NEW;
+                    speakUp("Mohon maaf, provider tidak ditemukan.");
+                }
             }
         },7000);
 
@@ -207,6 +324,8 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
                     listChat.add(replyChat);
                     adapter.notifyDataSetChanged();
                     recyclerView.smoothScrollToPosition(listChat.size()-1);
+
+//                    andiniImage.setImageResource(R.drawable.ic_listening_fix);
                     speakUp(replyChat.getMessage());
 
                     currentState = STATE_NEW;
@@ -263,14 +382,30 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
                     }
                 }, 2000);
             } else{
-                listChat.add(new ChatModel(ChatModel.SYSTEM_INPUT, "Maaf saya tidak mengerti", getCurrentTimeStamp()));
-                adapter.notifyDataSetChanged();
+
+                listChat.add(new ChatModel(ChatModel.USER_INPUT, input, getCurrentTimeStamp()));
+                listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Typing . . . ", "00"));
                 recyclerView.smoothScrollToPosition(listChat.size()-1);
-                speakUp("Maaf saya tidak mengerti");
+                adapter.notifyDataSetChanged();
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 100ms
+                        adapter.removeLastItem();
+                        listChat.add(new ChatModel(ChatModel.SYSTEM_INPUT, "Maaf saya tidak mengerti", getCurrentTimeStamp()));
+                        adapter.notifyDataSetChanged();
+                        recyclerView.smoothScrollToPosition(listChat.size()-1);
+                        speakUp("Maaf saya tidak mengerti");
+                    }
+                }, 2000);
+
             }
         }
         else if(currentState == TOP_UP_STATE_ASK_NUMBER){
             String phoneNumber = input.replaceAll("\\s+","");
+            phoneNumber = phoneNumber.replaceAll("[-]","");
             phoneCreditModel.setPhoneNumber(phoneNumber);
 
             listChat.add(new ChatModel(ChatModel.USER_INPUT, phoneNumber, getCurrentTimeStamp()));
@@ -292,14 +427,63 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
         } else if(currentState == TOP_UP_STATE_ASK_AMOUNT){
 
             String[] amountText = input.split(" ");
-            String amount = amountText[0];
+            String amount = "";
+            for(int i=0; i<amountText.length; i++){
+                String temp = amountText[i];
+                if(temp.contains("rp")){
+                    temp = temp.substring(2);
+                    temp = temp.replaceAll("[.]","");
+                    if (temp.matches("[0-9]+") && temp.length() > 2) {
+                        amount = temp;
+                        break;
+                    }
+                }
+                else{
+                    temp = temp.replaceAll("[.]","");
+                    if (temp.matches("[0-9]+") && temp.length() > 2) {
+                        amount = temp;
+                        break;
+                    }
+                }
+
+            }
+
+            if(amount.isEmpty()){
+                listChat.add(new ChatModel(ChatModel.USER_INPUT, input, getCurrentTimeStamp()));
+                listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Typing . . . ", "00"));
+                recyclerView.smoothScrollToPosition(listChat.size()-1);
+                adapter.notifyDataSetChanged();
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 1000ms
+                        adapter.removeLastItem();
+                        listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Mohon sebutkan kembali nominal dengan benar", "00"));
+                        recyclerView.smoothScrollToPosition(listChat.size()-1);
+                        adapter.notifyDataSetChanged();
+                        speakUp("Mohon sebutkan kembali nominal dengan benar");
+                        return;
+                    }
+                }, 2000);
+                return;
+            }
             Log.d(Const.TAG, "processInput amount 1: " + amount);
 
 
-            amount = amount.replaceAll("[.]","");
+//            amount = amount.replaceAll("[.]","");
+//            if(amount.contains("rp"))
+//                amount = amount.substring(2);
+            String visibleMessage = input;
+//            if(input.contains("rp"))
+//                visibleMessage = input.substring(2);
             phoneCreditModel.setAmount(amount);
 
-            listChat.add(new ChatModel(ChatModel.USER_INPUT, amount, getCurrentTimeStamp()));
+            ChatModel chatModel = new ChatModel(ChatModel.USER_INPUT, amount, getCurrentTimeStamp());
+            chatModel.setVisibleMessage(visibleMessage);
+            listChat.add(chatModel);
+
             listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Typing . . . ", "00"));
             recyclerView.smoothScrollToPosition(listChat.size()-1);
             adapter.notifyDataSetChanged();
@@ -308,21 +492,44 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
 
 
         } else if(currentState == TOP_UP_STATE_ASK_CONFIRMATION){
+            if(input.contains("benar")){
+                listChat.add(new ChatModel(ChatModel.USER_INPUT, input, getCurrentTimeStamp()));
+                listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Typing . . . ", "00"));
+                recyclerView.smoothScrollToPosition(listChat.size()-1);
+                adapter.notifyDataSetChanged();
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 1000ms
+                        processTopUpTransaction();
+                    }
+                }, 2000);
+            }
+            else if(input.contains("bukan") || input.contains("tidak") || input.contains("salah")){
+                listChat.add(new ChatModel(ChatModel.USER_INPUT, input, getCurrentTimeStamp()));
+                listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Typing . . . ", "00"));
+                recyclerView.smoothScrollToPosition(listChat.size()-1);
+                adapter.notifyDataSetChanged();
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Do something after 1000ms
+                        adapter.removeLastItem();
+                        listChat.add(new ChatModel(ChatModel.SYSTEM_INPUT, "Baiklah, transaksi dibatalkan", getCurrentTimeStamp()));
+                        adapter.notifyDataSetChanged();
+                        recyclerView.smoothScrollToPosition(listChat.size()-1);
+                        currentState = STATE_NEW;
+                        speakUp("Baiklah, transaksi dibatalkan");
+
+                    }
+                }, 2000);
+            }
 
 
-            listChat.add(new ChatModel(ChatModel.USER_INPUT, input, getCurrentTimeStamp()));
-            listChat.add(new ChatModel(ChatModel.SYSTEM_TYPING_INPUT, "Typing . . . ", "00"));
-            recyclerView.smoothScrollToPosition(listChat.size()-1);
-            adapter.notifyDataSetChanged();
-
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //Do something after 1000ms
-                    processTopUpTransaction();
-                }
-            }, 2000);
 
         } else if(currentState == TOP_UP_STATE_PROCESSING){
 
@@ -604,11 +811,35 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
                 }
             }
         });
+        myTTS.setOnUtteranceCompletedListener(this);
+//        myTTS.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+//            @Override
+//            public void onStart(String utteranceId) {
+//
+//            }
+//
+//            @Override
+//            public void onDone(String utteranceId) {
+//
+//                Log.d(Const.TAG, "Selesai ngomong");
+//                canListening = true;
+//            }
+//
+//            @Override
+//            public void onError(String utteranceId) {
+//
+//            }
+//        });
     }
 
     private void speakUp(String message) {
+        canListening = false;
+
+        changeAndini(R.drawable.ic_talking_fix);
+//        andiniImage.setImageResource(R.drawable.ic_talking_fix);
+
         if(Build.VERSION.SDK_INT >= 21){
-            myTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
+            myTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null, "asdasd");
         }else{
             myTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null);
         }
@@ -617,6 +848,7 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
     @Override
     protected void onPostResume() {
         super.onPostResume();
+        canListening = true;
         initializeTextToSpeech();
     }
 
@@ -627,6 +859,7 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
     }
 
     private void initializeSpeechToText() {
+        canListening = true;
         if(SpeechRecognizer.isRecognitionAvailable(this)){
             mySpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
             mySpeechRecognizer.setRecognitionListener(new RecognitionListener() {
@@ -657,13 +890,24 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
 
                 @Override
                 public void onError(int error) {
-
+                    Log.d(Const.TAG, "onError: " + error);
+                    micIcon.setImageResource(R.drawable.ic_icon_mic_svg);
+                    canListening = true;
+                    listChat.add(new ChatModel(ChatModel.SYSTEM_INPUT, "Maaf apakah bisa diulangi? saya kurang mendengarkan", ""));
+                    adapter.notifyDataSetChanged();
+                    recyclerView.smoothScrollToPosition(listChat.size()-1);
+                    speakUp("Maaf apakah bisa diulangi? saya kurang mendengarkan");
                 }
 
                 @Override
                 public void onResults(Bundle bundle) {
                     List<String> results = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
+                    changeAndini(R.drawable.ic_thinking_fix);
+//                    andiniImage.setImageResource(R.drawable.ic_thinking_fix);
+//                    Glide.with(MainActivity.this).load(R.drawable.ic_listening1).into(andiniImage);
+
+                    micIcon.setImageResource(R.drawable.ic_icon_mic_svg);
                     processInput(results.get(0));
                 }
 
@@ -692,9 +936,26 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
 
     private void startListening() {
         Log.d(Const.TAG, "startListening: ");
+
+        if (micIcon.getDrawable() instanceof GifDrawable) {
+            ((GifDrawable)micIcon.getDrawable()).stop();
+            ((GifDrawable)micIcon.getDrawable()).startFromFirstFrame();
+        }
+        Glide.with(this).load(R.drawable.loading).into(micIcon);Drawable drawable = micIcon.getDrawable();
+        if (drawable instanceof GifDrawable) {
+
+//            Animatable gif = (Animatable)drawable;
+            GifDrawable gif = (GifDrawable)drawable;
+            if (gif.isRunning()){
+                gif.stop();
+                gif.start();
+
+            }
+        }
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+
         mySpeechRecognizer.startListening(intent);
     }
 
@@ -761,5 +1022,17 @@ public class MainActivity extends AppCompatActivity implements BaseRequestListen
             });
         } catch (Exception ignored) {
         }
+    }
+
+    @Override
+    public void onUtteranceCompleted(String utteranceId) {
+        canListening = true;
+        Log.d(Const.TAG, "Selesai ngomong");
+        changeAndini(R.drawable.ic_talking_fix);
+    }
+
+    private void changeAndini(int resource){
+        andiniImage =findViewById(R.id.andini);
+        andiniImage.setImageResource(resource);
     }
 }

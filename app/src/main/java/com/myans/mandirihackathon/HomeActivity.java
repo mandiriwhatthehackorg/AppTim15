@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.myans.mandirihackathon.interfaces.Const;
 
 import java.util.List;
@@ -75,6 +76,9 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void startListening() {
+
+        Glide.with(this).load(R.drawable.loading).into(ic_mic);
+
         Log.d(Const.TAG, "startListening: ");
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -149,7 +153,11 @@ public class HomeActivity extends AppCompatActivity {
 
                 @Override
                 public void onError(int error) {
+                    Intent intent = new Intent(HomeActivity.this, MainActivity.class);
 
+                    Glide.with(HomeActivity.this).load(R.drawable.mic).into(ic_mic);
+                    intent.putExtra("extra", "...");
+                    startActivity(intent);
                 }
 
                 @Override
@@ -157,6 +165,8 @@ public class HomeActivity extends AppCompatActivity {
                     List<String> results = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                     String text = results.get(0);
                     Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+
+                    Glide.with(HomeActivity.this).load(R.drawable.mic).into(ic_mic);
                     intent.putExtra("extra", text);
                     startActivity(intent);
                 }

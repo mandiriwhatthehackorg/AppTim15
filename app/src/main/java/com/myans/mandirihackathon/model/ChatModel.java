@@ -9,6 +9,17 @@ public class ChatModel {
     private String message;
     private String sendTime;
 
+
+    private String visibleMessage;
+
+    public String getVisibleMessage() {
+        return visibleMessage;
+    }
+
+    public void setVisibleMessage(String visibleMessage) {
+        this.visibleMessage = visibleMessage;
+    }
+
     public String getSendTime() {
         return sendTime;
     }

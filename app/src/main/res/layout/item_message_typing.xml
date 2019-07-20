@@ -8,20 +8,32 @@
     android:paddingTop="8dp">
 
 
-    <TextView
+    <RelativeLayout
         android:layout_alignParentRight="true"
         android:layout_marginLeft="10dp"
-        android:textSize="14sp"
-        android:id="@+id/text_message_body"
-        android:text="082386130150"
-        android:background="@drawable/ic_test_system_bubble"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxWidth="220dp"
-        android:padding="12dp"
-        android:textColor="#ffff"
-        android:textStyle="bold"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content">
 
-        android:layout_marginRight="8dp" />
+        <TextView
+            android:layout_alignParentRight="true"
+            android:textSize="14sp"
+            android:id="@+id/text_message_body"
+            android:text=""
+            android:background="@drawable/ic_test_system_bubble"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:maxWidth="220dp"
+            android:padding="12dp"
+            android:textColor="#ffff"
+            android:textStyle="bold"
+
+            android:layout_marginRight="8dp" />
+
+        <ImageView
+            android:layout_centerInParent="true"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/typing_dot"/>
+    </RelativeLayout>
 
 </RelativeLayout>
